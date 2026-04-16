@@ -4,10 +4,12 @@ export interface Ingredient {
   name: string;
   amount: string;
   unit: string;
+  description: string;
 }
 
 export interface Instruction {
   step: number;
+  title: string;
   text: string;
 }
 
@@ -46,6 +48,126 @@ export interface GeneratedRecipeResponse {
   };
 }
 
+export type RecipeEventHandler = {
+  onRecipe: (recipe: Recipe) => void;
+  onHeroImage: (image: string) => void;
+  onStepImage: (index: number, image: string) => void;
+  onComplete: (images: { hero: string; steps: string[] }) => void;
+  onError: (error: string) => void;
+};
+
+export async function generateRecipeStream(
+  prompt: string,
+  handlers: RecipeEventHandler
+): Promise<void> {
+  const response = await fetch(`${API_URL}/api/recipes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt })
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || `HTTP ${response.status}`);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error('Response body not available');
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        try {
+          const data = JSON.parse(line.slice(6));
+          switch (data.type) {
+            case 'recipe':
+              handlers.onRecipe(data.data);
+              break;
+            case 'hero':
+              handlers.onHeroImage(data.data);
+              break;
+            case 'step':
+              handlers.onStepImage(data.index, data.data);
+              break;
+            case 'complete':
+              const images = { hero: '', steps: [] as string[] };
+              handlers.onComplete(images);
+              break;
+            case 'error':
+              handlers.onError(data.error);
+              break;
+          }
+        } catch (e) {
+          console.error('Failed to parse SSE data:', e);
+        }
+      }
+    }
+  }
+}
+
+export async function regenerateImagesStream(
+  id: string,
+  handlers: Pick<RecipeEventHandler, 'onHeroImage' | 'onStepImage' | 'onComplete' | 'onError'>
+): Promise<void> {
+  const response = await fetch(`${API_URL}/api/recipes/${id}/regenerate-images`, {
+    method: 'POST'
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || `HTTP ${response.status}`);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error('Response body not available');
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        try {
+          const data = JSON.parse(line.slice(6));
+          switch (data.type) {
+            case 'hero':
+              handlers.onHeroImage(data.data);
+              break;
+            case 'step':
+              handlers.onStepImage(data.index, data.data);
+              break;
+            case 'complete':
+              handlers.onComplete({ hero: '', steps: [] });
+              break;
+            case 'error':
+              handlers.onError(data.error);
+              break;
+          }
+        } catch (e) {
+          console.error('Failed to parse SSE data:', e);
+        }
+      }
+    }
+  }
+}
+
 async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 60000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
@@ -63,9 +185,15 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout 
     }
     
     return response.json();
-  } catch (error) {
+  } catch (error: unknown) {
     clearTimeout(id);
-    throw error;
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out. Please try again.');
+      }
+      throw error;
+    }
+    throw new Error('An unknown error occurred');
   }
 }
 
