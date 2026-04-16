@@ -147,6 +147,7 @@ export default function RecipeOverview({ recipe, images, onBack, deviceId }: Rec
                     <span className="font-headline font-bold text-lg">{ing.name}</span>
                     <span className="font-headline text-secondary text-sm">{ing.amount} {ing.unit}</span>
                   </div>
+                  <p className="text-sm text-on-surface-variant font-body">{ing.description}</p>
                 </li>
               ))}
             </ul>
@@ -179,6 +180,7 @@ export default function RecipeOverview({ recipe, images, onBack, deviceId }: Rec
                   <span className="font-headline text-secondary text-xs font-bold tracking-[0.3em] mb-4">
                     STEP {String(step.step).padStart(2, '0')}
                   </span>
+                  <h3 className="font-headline font-bold text-xl text-primary mb-4 uppercase">{step.title}</h3>
                   <p className="font-body text-on-surface-variant leading-relaxed">
                     {step.text}
                   </p>

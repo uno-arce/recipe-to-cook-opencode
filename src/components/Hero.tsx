@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Search, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { generateRecipe } from '../services/api';
-import { Recipe, RecipeWithImages } from '../services/api';
+import { generateRecipeStream } from '../services/api';
+import { Recipe } from '../services/api';
 
 interface HeroProps {
   onRecipeGenerated: (recipe: Recipe, images: { hero: string; steps: string[] }) => void;
@@ -13,19 +13,49 @@ export default function Hero({ onRecipeGenerated, isLoading }: HeroProps) {
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<string | null>(null);
 
   const handleGenerate = async () => {
     if (!prompt.trim() || isGenerating) return;
 
     setIsGenerating(true);
     setError(null);
+    setProgress('Generating recipe...');
+
+    const images = { hero: '', steps: [] as string[] };
+    let currentRecipe: Recipe | null = null;
+    let totalSteps = 0;
 
     try {
-      const response = await generateRecipe(prompt);
-      onRecipeGenerated(response.recipe, response.images);
+      await generateRecipeStream(prompt, {
+        onRecipe: (recipe) => {
+          currentRecipe = recipe;
+          totalSteps = recipe.instructions?.length || 0;
+          setProgress('Recipe created! Generating images...');
+        },
+        onHeroImage: (image) => {
+          images.hero = image;
+          setProgress('Generating step images...');
+        },
+        onStepImage: (index, image) => {
+          images.steps[index] = image;
+          setProgress(`Generating step ${index + 1}/${totalSteps}...`);
+        },
+        onComplete: () => {
+          setProgress(null);
+          if (currentRecipe) {
+            onRecipeGenerated(currentRecipe, { hero: images.hero, steps: [...images.steps] });
+          }
+        },
+        onError: (err) => {
+          setError(err);
+          setProgress(null);
+        }
+      });
       setPrompt('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate recipe');
+      setProgress(null);
     } finally {
       setIsGenerating(false);
     }
@@ -73,15 +103,25 @@ export default function Hero({ onRecipeGenerated, isLoading }: HeroProps) {
             )}
           </div>
           
-          {error && (
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mt-4 text-sm text-red-600 font-headline"
-            >
-              {error}
-            </motion.p>
-          )}
+            {error && (
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-4 text-sm text-red-600 font-headline"
+              >
+                {error}
+              </motion.p>
+            )}
+            
+            {progress && (
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-4 text-sm text-secondary font-headline"
+              >
+                {progress}
+              </motion.p>
+            )}
         </motion.div>
         
         <motion.p 
