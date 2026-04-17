@@ -54,6 +54,7 @@ export default function RecipeSpotlight({ recipes, onRecipeClick, isLoading }: R
         generationPrompt: ''
       },
       imagePrompts: [],
+      heroImage: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
