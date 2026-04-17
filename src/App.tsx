@@ -7,7 +7,8 @@ import Process from './components/Process';
 import Favorites from './components/Favorites';
 import RecipeOverview from './components/RecipeOverview';
 import Footer from './components/Footer';
-import { getRecipes, Recipe, RecipeWithImages } from './services/api';
+import ImageLoadingModal from './components/ImageLoadingModal';
+import { getRecipes, regenerateImagesStream, Recipe, RecipeWithImages } from './services/api';
 import { useImageStore } from './stores/imageStore';
 
 function generateDeviceId(): string {
@@ -25,6 +26,8 @@ export default function App() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isRegeneratingImages, setIsRegeneratingImages] = useState(false);
+  const [regenerateProgress, setRegenerateProgress] = useState({ current: 0, total: 0 });
   
   const deviceId = generateDeviceId();
   const { recipeImages, setRecipeImage } = useImageStore();
@@ -45,11 +48,48 @@ export default function App() {
     fetchRecipes();
   }, []);
 
-  const handleRecipeClick = (recipe: Recipe) => {
-    const images = recipeImages.get(recipe._id);
-    setSelectedRecipe({ ...recipe, images: images || { hero: '', steps: [] } });
-    setView('overview');
-    window.scrollTo(0, 0);
+  const handleRecipeClick = async (recipe: Recipe) => {
+    const storedImages = recipeImages.get(recipe._id);
+    const heroImage = storedImages?.hero || recipe.heroImage || '';
+    const storedSteps = storedImages?.steps || [];
+    
+    const needsStepRegeneration = storedSteps.length < recipe.instructions.length;
+    
+    if (needsStepRegeneration) {
+      setIsRegeneratingImages(true);
+      setRegenerateProgress({ current: 0, total: recipe.instructions.length });
+      
+      const newSteps: string[] = [];
+      
+      await regenerateImagesStream(recipe._id, {
+        onHeroImage: () => {},
+        onStepImage: (index, image) => {
+          newSteps[index] = image;
+          setRegenerateProgress(prev => ({ ...prev, current: prev.current + 1 }));
+        },
+        onComplete: () => {
+          const updatedImages = { hero: heroImage, steps: newSteps };
+          setRecipeImage(recipe._id, updatedImages);
+          setSelectedRecipe({ ...recipe, images: updatedImages });
+          setIsRegeneratingImages(false);
+          setView('overview');
+          window.scrollTo(0, 0);
+        },
+        onError: (error) => {
+          console.error('Failed to regenerate images:', error);
+          const updatedImages = { hero: heroImage, steps: newSteps.length > 0 ? newSteps : [] };
+          setRecipeImage(recipe._id, updatedImages);
+          setSelectedRecipe({ ...recipe, images: updatedImages });
+          setIsRegeneratingImages(false);
+          setView('overview');
+          window.scrollTo(0, 0);
+        }
+      });
+    } else {
+      setSelectedRecipe({ ...recipe, images: storedImages || { hero: heroImage, steps: [] } });
+      setView('overview');
+      window.scrollTo(0, 0);
+    }
   };
 
   const handleViewChange = (newView: 'discover' | 'favorites') => {
@@ -103,6 +143,12 @@ export default function App() {
           deviceId={deviceId}
         />
       )}
+
+      <ImageLoadingModal
+        isOpen={isRegeneratingImages}
+        currentStep={regenerateProgress.current}
+        totalSteps={regenerateProgress.total}
+      />
       
       <Footer />
     </main>
