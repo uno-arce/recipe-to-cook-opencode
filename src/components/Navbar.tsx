@@ -15,7 +15,7 @@ export default function Navbar({ currentView, onViewChange }: NavbarProps) {
         className="text-2xl font-black uppercase text-primary font-headline tracking-tight cursor-pointer"
         onClick={() => onViewChange('discover')}
       >
-        ReciPal
+        Recipe2Cook
       </motion.span>
       <div className="flex gap-8 items-center font-headline text-xs uppercase tracking-widest font-bold">
         <button 
