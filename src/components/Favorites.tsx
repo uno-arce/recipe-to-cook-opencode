@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Clock, Share2, Heart, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Recipe, getPreferences, removeFavorite, Preference } from '../services/api';
+import { useImageStore } from '../stores/imageStore';
 
 interface FavoritesProps {
   recipes: Recipe[];
@@ -13,6 +14,7 @@ interface FavoritesProps {
 export default function Favorites({ recipes, onDiscoverMore, onRecipeClick, deviceId }: FavoritesProps) {
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { recipeImages } = useImageStore();
 
   useEffect(() => {
     const fetchPreferences = async () => {
@@ -86,21 +88,32 @@ export default function Favorites({ recipes, onDiscoverMore, onRecipeClick, devi
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-outline-variant">
-            {favoriteRecipes.map((recipe, idx) => (
-              <motion.div 
-                key={recipe._id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="group relative bg-surface-container-low overflow-hidden transition-all duration-500 hover:z-10 cursor-pointer"
-                onClick={() => onRecipeClick(recipe)}
-              >
-                <div className="aspect-[4/5] relative overflow-hidden">
-                  <div className="w-full h-full bg-surface-container-high flex items-center justify-center">
-                    <span className="font-headline text-on-surface-variant uppercase">No image</span>
-                  </div>
-                </div>
+            {favoriteRecipes.map((recipe, idx) => {
+                const heroImage = recipeImages.get(recipe._id)?.hero || recipe.heroImage || '';
+                return (
+                  <motion.div 
+                    key={recipe._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="group relative bg-surface-container-low overflow-hidden transition-all duration-500 hover:z-10 cursor-pointer"
+                    onClick={() => onRecipeClick(recipe)}
+                  >
+                    <div className="aspect-[4/5] relative overflow-hidden">
+                      {heroImage ? (
+                        <img 
+                          src={heroImage} 
+                          alt={recipe.title}
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-surface-container-high flex items-center justify-center">
+                          <span className="font-headline text-on-surface-variant uppercase">No image</span>
+                        </div>
+                      )}
+                    </div>
                 <div className="p-6 bg-surface-container-low border-t border-outline-variant/10">
                   <h3 className="font-headline text-2xl font-bold text-primary mb-3">{recipe.title}</h3>
                   <div className="flex justify-between items-center">
@@ -121,7 +134,8 @@ export default function Favorites({ recipes, onDiscoverMore, onRecipeClick, devi
                   </div>
                 </div>
               </motion.div>
-            ))}
+                );
+              })}
           </div>
 
           <div className="mt-24 flex flex-col items-center">
