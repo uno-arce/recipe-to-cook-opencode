@@ -29,6 +29,7 @@ export interface Recipe {
     generationPrompt: string;
   };
   imagePrompts: string[];
+  heroImage: string | null;
   createdAt: string;
   updatedAt: string;
 }
