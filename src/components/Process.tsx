@@ -31,7 +31,7 @@ export default function Process() {
   return (
     <section className="px-6 py-24 md:px-12 lg:px-24">
       <div className="max-w-4xl mx-auto">
-        <h2 className="font-headline text-4xl font-black text-primary uppercase tracking-tighter mb-20">The Process</h2>
+        <h2 className="font-headline text-2xl md:text-4xl font-black text-primary uppercase tracking-tighter mb-20 text-center md:text-left">The Process</h2>
         <div className="space-y-32 relative">
           <div className="absolute left-6 top-4 bottom-0 w-[1px] bg-outline-variant hidden md:block"></div>
           
@@ -50,8 +50,8 @@ export default function Process() {
                 </div>
               </div>
               
-              <div className="md:col-span-7 glass-panel p-8 border-none">
-                <h3 className="font-headline font-bold text-2xl text-primary mb-4 uppercase">{step.title}</h3>
+              <div className="md:col-span-7 glass-panel p-6 md:p-8 border-none">
+                <h3 className="font-headline font-bold text-xl md:text-2xl text-primary mb-4 uppercase">{step.title}</h3>
                 <p className="font-body text-on-surface-variant leading-relaxed">
                   {step.desc}
                 </p>
