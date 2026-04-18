@@ -89,10 +89,10 @@ export default function RecipeSpotlight({ recipes, onRecipeClick, isLoading }: R
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="relative z-20 glass-panel p-10 md:p-16 border border-outline-variant/20"
+          className="relative z-20 glass-panel p-6 md:p-10 md:p-16 border border-outline-variant/20"
         >
           <span className="font-headline text-secondary text-sm font-bold uppercase tracking-[0.2em] mb-4 block">Recipe Spotlight</span>
-          <h2 className="font-headline text-5xl md:text-6xl font-black text-primary leading-[0.9] mb-6 uppercase">{SPOTLIGHT_RECIPE.name}</h2>
+          <h2 className="font-headline text-3xl md:text-5xl md:text-6xl font-black text-primary leading-[0.9] mb-6 uppercase">{SPOTLIGHT_RECIPE.name}</h2>
           <p className="font-body text-on-surface-variant text-lg leading-relaxed mb-8">
             {SPOTLIGHT_RECIPE.description}
           </p>
