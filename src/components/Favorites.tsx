@@ -3,6 +3,7 @@ import { Clock, Share2, Heart, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Recipe, getPreferences, removeFavorite, Preference } from '../services/api';
 import { useImageStore } from '../stores/imageStore';
+import SkeletonCard from './SkeletonCard';
 
 interface FavoritesProps {
   recipes: Recipe[];
@@ -48,12 +49,23 @@ export default function Favorites({ recipes, onDiscoverMore, onRecipeClick, devi
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto text-center"
+        className="pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto"
       >
-        <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
-        <p className="mt-4 font-headline text-sm text-on-surface-variant uppercase tracking-widest">
-          Loading favorites...
-        </p>
+        <div className="mb-16">
+          <span className="font-headline uppercase text-xs tracking-widest text-secondary mb-4 block">Saved Collection</span>
+          <h1 className="font-headline text-6xl md:text-8xl font-bold text-primary tracking-tighter leading-none uppercase">
+            Your Saved Flavors
+          </h1>
+          <div className="h-1 w-32 bg-surface-container-highest mt-8"></div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-outline-variant">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <div key={idx} className="bg-surface-container-low overflow-hidden">
+              <SkeletonCard />
+            </div>
+          ))}
+        </div>
       </motion.div>
     );
   }
