@@ -1,20 +1,39 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+## App Context
+I decided to learn opencode for agentic coding experience and I come across this idea of building a food app. The main idea is to combine text generation and image diffusion to produce a visual guide on the step-by-step instructions of the food recipes. The frontend UI is made from google stitch, send the design context and html code to google studio and let it build the static frontend, then exported it to opencode to build its server and frontend features.
 
-# Run and deploy your AI Studio app
+## Key Functionalities
+**App Functionalities**
+- AI-Powered Recipe Generation using Pollinations API (text)
+- Image Generation using Cloudflare AI Workers (stable diffusion)
+- Stateless Session Storage using Zustand
+- Device-based Favorites with Local Preferences
+- Recipe Search and Collection Browsing
 
-This contains everything you need to run your app locally.
+**Accessibility Functionalities**
+- Skeleton Loading States
+- Image Generation Progress Modal
+- Responsive Design with Motion Animations
+- Form Progress Indicators
 
-View your app in AI Studio: https://ai.studio/apps/cd593e38-fcf9-428f-a237-7c04de75328b
+## What's Inside
+**Dependencies**
+| Package | Purpose |
+| --- | --- |
+| `vite` | Development Server & Build Tool |
+| `react` | UI Framework |
+| `motion` | Animation Library |
+| `tailwindCSS` | Utility First Styling |
+| `Zustand` | State Management |
+| `lucide-react` | Icon Library |
+| `axios` | HTTP Client |
 
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+**Folder Structure**
+```
+src/
+├── assets         # Images 
+├── components     # Reusable and standalone components
+├── data           # Static data and types
+├── stores         # Zustand state management
+├── App.tsx        # Main application component
+├── main.tsx       # Application entry point
+```
