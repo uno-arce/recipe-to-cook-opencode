@@ -17,9 +17,9 @@ export default function Ingredients() {
     <section className="px-6 py-24 md:px-12 lg:px-24 bg-surface-container-low">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-4">
-          <div className="max-w-xl">
-            <h2 className="font-headline text-4xl font-black text-primary uppercase tracking-tighter">Ingredients</h2>
-            <div className="h-1 w-24 bg-secondary mt-2"></div>
+          <div className="max-w-xl text-center md:text-left">
+            <h2 className="font-headline text-2xl md:text-4xl font-black text-primary uppercase tracking-tighter">Ingredients</h2>
+            <div className="h-1 w-24 bg-secondary mt-2 mx-auto md:mx-0"></div>
           </div>
           <p className="font-headline text-xs uppercase text-on-surface-variant tracking-widest">Calculated for 1.0 standard batch</p>
         </div>
